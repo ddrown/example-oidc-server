@@ -116,6 +116,9 @@ require_oauth = ResourceProtector()
 
 PUBKEY = {}
 
+def pubkey():
+    return { "keys": [PUBKEY] }
+
 def get_metadata():
     base_url = JWT_CONFIG["iss"]
     return {

@@ -101,6 +101,10 @@ def issue_token():
 def api_me():
     return jsonify(generate_user_info(current_token.user, current_token.scope))
 
+@bp.route("/static/jwks.json")
+def jwk_json():
+    return jsonify(pubkey())
+
 @bp.route('/.well-known/openid-configuration')
 def openid_configuration():
     return jsonify(get_metadata())
