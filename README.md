@@ -57,6 +57,24 @@ Now you can access the userinfo endpoint:
 $ curl -H "Authorization: Bearer ${access_token}" http://127.0.0.1:5000/oauth/userinfo
 ```
 
+## Testing with https://openidconnect.net/
+
+* Put this app on the internet
+* Go to https://openidconnect.net/
+* Under the configuration tab
+* Switch to the Custom server template
+* Put https://{hostname}/.well-known/openid-configuration under Discovery Document URL
+* Click "Use Discovery Document" and it should fill in the endpoints with your hostname (check OAUTH2_JWT_ISS if they have the wrong hostname)
+* Setup a new client on your authlib server
+ * client name "openidconnect"
+ * client uri "https://openidconnect.net/"
+ * allowed scope: "openid profile email phone address"
+ * redirect uris "https://openidconnect.net/callback"
+ * grant types "authorization_code"
+ * response types "code"
+ * token endpoint auth method "client_secret_post"
+* take the client ID and secret and put them into openidconnect.net and click save
+
 ## Things to keep in mind
 
 * Generate new RSA keys and put them in the files oidc.key / oidc.pem
