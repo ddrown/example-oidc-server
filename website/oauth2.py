@@ -1,3 +1,4 @@
+import sys
 from authlib.integrations.flask_oauth2 import (
     AuthorizationServer, ResourceProtector)
 from authlib.integrations.sqla_oauth2 import (
@@ -14,17 +15,20 @@ from authlib.oidc.core.grants import (
     OpenIDHybridGrant as _OpenIDHybridGrant,
 )
 from authlib.oidc.core import UserInfo
+from authlib.jose import jwk
 from werkzeug.security import gen_salt
 from .models import db, User
 from .models import OAuth2Client, OAuth2AuthorizationCode, OAuth2Token
 
+def read_file(filename):
+    try:
+        with open(filename, "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"required file {filename} not found, exiting")
+        sys.exit(1)
 
-DUMMY_JWT_CONFIG = {
-    'key': 'secret-key',
-    'alg': 'HS256',
-    'iss': 'https://authlib.org',
-    'exp': 3600,
-}
+JWT_CONFIG = { }
 
 def exists_nonce(nonce, req):
     exists = OAuth2AuthorizationCode.query.filter_by(
@@ -76,7 +80,7 @@ class OpenIDCode(_OpenIDCode):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self, grant):
-        return DUMMY_JWT_CONFIG
+        return JWT_CONFIG
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -87,7 +91,7 @@ class ImplicitGrant(_OpenIDImplicitGrant):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self, grant):
-        return DUMMY_JWT_CONFIG
+        return JWT_CONFIG
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -101,7 +105,7 @@ class HybridGrant(_OpenIDHybridGrant):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self):
-        return DUMMY_JWT_CONFIG
+        return JWT_CONFIG
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -109,6 +113,8 @@ class HybridGrant(_OpenIDHybridGrant):
 
 authorization = AuthorizationServer()
 require_oauth = ResourceProtector()
+
+PUBKEY = {}
 
 def get_metadata():
     base_url = JWT_CONFIG["iss"]
@@ -127,6 +133,18 @@ def get_metadata():
     }
 
 def config_oauth(app):
+    global PUBKEY
+    global JWT_CONFIG
+
+    JWT_CONFIG['iss'] = app.config["OAUTH2_JWT_ISS"]
+    JWT_CONFIG['key'] = jwk.dumps(read_file(app.config["OAUTH2_JWT_KEY"]), "RSA")
+    JWT_CONFIG['key']['kid'] = app.config["OAUTH2_JWK_KEY_NAME"]
+    JWT_CONFIG['alg'] = app.config["OAUTH2_JWT_ALG"]
+    JWT_CONFIG['exp'] = app.config["OAUTH2_JWT_EXP"]
+
+    PUBKEY = jwk.dumps(read_file(app.config["OAUTH2_JWT_PUBLIC_KEY"]), "RSA")
+    PUBKEY["kid"] = app.config["OAUTH2_JWK_KEY_NAME"]
+
     query_client = create_query_client_func(db.session, OAuth2Client)
     save_token = create_save_token_func(db.session, OAuth2Token)
     authorization.init_app(

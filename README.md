@@ -56,3 +56,8 @@ Now you can access the userinfo endpoint:
 ```bash
 $ curl -H "Authorization: Bearer ${access_token}" http://127.0.0.1:5000/oauth/userinfo
 ```
+
+## Things to keep in mind
+
+* Generate new RSA keys and put them in the files oidc.key / oidc.pem
+* Change the OAUTH2_JWT_ISS setting in website/settings.py to match your hostname

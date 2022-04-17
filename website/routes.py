@@ -5,8 +5,7 @@ from werkzeug.security import gen_salt
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2 import OAuth2Error
 from .models import db, User, OAuth2Client
-from .oauth2 import authorization, require_oauth, generate_user_info, get_metadata
-
+from .oauth2 import authorization, require_oauth, generate_user_info, pubkey, get_metadata
 
 bp = Blueprint('home', __name__)
 
