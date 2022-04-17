@@ -5,7 +5,7 @@ from werkzeug.security import gen_salt
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2 import OAuth2Error
 from .models import db, User, OAuth2Client
-from .oauth2 import authorization, require_oauth, generate_user_info
+from .oauth2 import authorization, require_oauth, generate_user_info, get_metadata
 
 
 bp = Blueprint('home', __name__)
@@ -101,3 +101,7 @@ def issue_token():
 @require_oauth('profile')
 def api_me():
     return jsonify(generate_user_info(current_token.user, current_token.scope))
+
+@bp.route('/.well-known/openid-configuration')
+def openid_configuration():
+    return jsonify(get_metadata())

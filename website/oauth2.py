@@ -110,6 +110,21 @@ class HybridGrant(_OpenIDHybridGrant):
 authorization = AuthorizationServer()
 require_oauth = ResourceProtector()
 
+def get_metadata():
+    base_url = JWT_CONFIG["iss"]
+    return {
+        "issuer": base_url,
+        "authorization_endpoint": f"{base_url}/oauth/authorize",
+        "token_endpoint": f"{base_url}/oauth/token",
+        "userinfo_endpoint": f"{base_url}/oauth/userinfo",
+        "jwks_uri": f"{base_url}/static/jwks.json",
+        "id_token_signing_alg_values_supported": ["RS256"],
+        "token_endpoint_auth_methods_supported": ["client_secret_basic"],
+        "token_endpoint_auth_signing_alg_values_supported": ["RS256"],
+        "scopes_supported": ["openid", "email"],
+        "response_types_supported": ["code", "code id_token", "id_token"],
+        "userinfo_signing_alg_values_supported": ["RS256"]
+    }
 
 def config_oauth(app):
     query_client = create_query_client_func(db.session, OAuth2Client)
