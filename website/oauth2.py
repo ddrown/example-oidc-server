@@ -39,17 +39,6 @@ def generate_user_info(user, scope):
 
 def create_authorization_code(client, grant_user, request):
     code = gen_salt(48)
-    nonce = request.data.get('nonce')
-    item = OAuth2AuthorizationCode(
-        code=code,
-        client_id=client.client_id,
-        redirect_uri=request.redirect_uri,
-        scope=request.scope,
-        user_id=grant_user.id,
-        nonce=nonce,
-    )
-    db.session.add(item)
-    db.session.commit()
     return code
 
 
@@ -57,7 +46,21 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
     def create_authorization_code(self, client, grant_user, request):
         return create_authorization_code(client, grant_user, request)
 
-    def parse_authorization_code(self, code, client):
+    def save_authorization_code(self, code, request):
+        client = request.client
+        nonce = request.data.get('nonce')
+        item = OAuth2AuthorizationCode(
+            code=code,
+            client_id=client.client_id,
+            redirect_uri=request.redirect_uri,
+            scope=request.scope,
+            user_id=request.user.id,
+            nonce=nonce,
+        )
+        db.session.add(item)
+        db.session.commit()
+
+    def query_authorization_code(self, code, client):
         item = OAuth2AuthorizationCode.query.filter_by(
             code=code, client_id=client.client_id).first()
         if item and not item.is_expired():
