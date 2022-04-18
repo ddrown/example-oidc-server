@@ -3,7 +3,8 @@ OAUTH2_JWT_ENABLED = True
 OAUTH2_JWT_ISS = 'https://authlib.org'
 OAUTH2_JWT_ALG = 'RS256'
 OAUTH2_JWT_EXP = 3600
-OAUTH2_JWT_KEY = "oidc.key"
+OAUTH2_JWT_KEY = "lequiCgxg3iKt+z9lMsfag=="
+OAUTH2_JWT_RSA_KEY = "oidc.key"
 OAUTH2_JWT_PUBLIC_KEY = "oidc.pem"
 OAUTH2_JWK_KEY_NAME = "oidc"
 

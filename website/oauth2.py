@@ -111,7 +111,7 @@ def config_oauth(app):
     global JWT_CONFIG
 
     JWT_CONFIG['iss'] = app.config["OAUTH2_JWT_ISS"]
-    JWT_CONFIG['key'] = jwk.dumps(read_file(app.config["OAUTH2_JWT_KEY"]), "RSA")
+    JWT_CONFIG['key'] = jwk.dumps(read_file(app.config["OAUTH2_JWT_RSA_KEY"]), "RSA")
     JWT_CONFIG['key']['kid'] = app.config["OAUTH2_JWK_KEY_NAME"]
     JWT_CONFIG['alg'] = app.config["OAUTH2_JWT_ALG"]
     JWT_CONFIG['exp'] = app.config["OAUTH2_JWT_EXP"]

@@ -79,3 +79,4 @@ $ curl -H "Authorization: Bearer ${access_token}" http://127.0.0.1:5000/oauth/us
 
 * Generate new RSA keys and put them in the files oidc.key / oidc.pem
 * Change the OAUTH2_JWT_ISS setting in website/settings.py to match your hostname
+* Generate a new random string for OAUTH2_JWT_KEY (I don't think this is used)
