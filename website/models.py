@@ -11,6 +11,9 @@ db = SQLAlchemy()
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), unique=True)
+    email = db.Column(db.String(40))
+    given_name = db.Column(db.String(40))
+    family_name = db.Column(db.String(40))
 
     def __str__(self):
         return self.username

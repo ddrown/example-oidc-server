@@ -34,7 +34,15 @@ def exists_nonce(nonce, req):
 
 
 def generate_user_info(user, scope):
-    return UserInfo(sub=str(user.id), name=user.username)
+    scopes = scope.split(" ")
+    extra = {
+        "name": user.username
+    }
+    for claim in scopes:
+        # also restricted by client_metadata.scope
+        if hasattr(user, claim):
+            extra[claim] = getattr(user, claim)
+    return UserInfo(sub=str(user.id), **extra)
 
 
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
