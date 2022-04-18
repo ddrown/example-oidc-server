@@ -37,14 +37,9 @@ def generate_user_info(user, scope):
     return UserInfo(sub=str(user.id), name=user.username)
 
 
-def create_authorization_code(client, grant_user, request):
-    code = gen_salt(48)
-    return code
-
-
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
     def create_authorization_code(self, client, grant_user, request):
-        return create_authorization_code(client, grant_user, request)
+        return gen_salt(48)
 
     def save_authorization_code(self, code, request):
         client = request.client
