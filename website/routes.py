@@ -6,6 +6,7 @@ from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2 import OAuth2Error
 from .models import db, User, OAuth2Client
 from .oauth2 import authorization, require_oauth, generate_user_info, pubkey, get_metadata
+import app
 
 bp = Blueprint('home', __name__)
 
@@ -75,16 +76,17 @@ def create_client():
 @bp.route('/oauth/authorize', methods=['GET', 'POST'])
 def authorize():
     user = current_user()
-    if request.method == 'GET':
-        try:
-            grant = authorization.get_consent_grant(end_user=user)
-        except OAuth2Error as error:
-            return jsonify(dict(error.get_body()))
-        return render_template('authorize.html', user=user, grant=grant)
-    if not user and 'username' in request.form:
-        username = request.form.get('username')
-        user = User.query.filter_by(username=username).first()
-    if 'confirm' in request.form and request.form['confirm']:
+    if app.app.config["OAUTH2_REQUIRE_CONSENT"]:
+        if request.method == 'GET':
+            try:
+                grant = authorization.get_consent_grant(end_user=user)
+            except OAuth2Error as error:
+                return jsonify(dict(error.get_body()))
+            return render_template('authorize.html', user=user, grant=grant)
+        if not user and 'username' in request.form:
+            username = request.form.get('username')
+            user = User.query.filter_by(username=username).first()
+    if not app.app.config["OAUTH2_REQUIRE_CONSENT"] or ('confirm' in request.form and request.form['confirm']):
         grant_user = user
     else:
         grant_user = None

@@ -7,6 +7,7 @@ OAUTH2_JWT_KEY = "lequiCgxg3iKt+z9lMsfag=="
 OAUTH2_JWT_RSA_KEY = "oidc.key"
 OAUTH2_JWT_PUBLIC_KEY = "oidc.pem"
 OAUTH2_JWK_KEY_NAME = "oidc"
+OAUTH2_REQUIRE_CONSENT = False
 
 REQUIRE_NONCE = False
 
