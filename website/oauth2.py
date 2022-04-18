@@ -9,11 +9,7 @@ from authlib.integrations.sqla_oauth2 import (
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
-from authlib.oidc.core.grants import (
-    OpenIDCode as _OpenIDCode,
-    OpenIDImplicitGrant as _OpenIDImplicitGrant,
-    OpenIDHybridGrant as _OpenIDHybridGrant,
-)
+from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
 from authlib.oidc.core import UserInfo
 from authlib.jose import jwk
 from werkzeug.security import gen_salt
@@ -86,31 +82,6 @@ class OpenIDCode(_OpenIDCode):
         return generate_user_info(user, scope)
 
 
-class ImplicitGrant(_OpenIDImplicitGrant):
-    def exists_nonce(self, nonce, request):
-        return exists_nonce(nonce, request)
-
-    def get_jwt_config(self, grant):
-        return JWT_CONFIG
-
-    def generate_user_info(self, user, scope):
-        return generate_user_info(user, scope)
-
-
-class HybridGrant(_OpenIDHybridGrant):
-    def create_authorization_code(self, client, grant_user, request):
-        return create_authorization_code(client, grant_user, request)
-
-    def exists_nonce(self, nonce, request):
-        return exists_nonce(nonce, request)
-
-    def get_jwt_config(self):
-        return JWT_CONFIG
-
-    def generate_user_info(self, user, scope):
-        return generate_user_info(user, scope)
-
-
 authorization = AuthorizationServer()
 require_oauth = ResourceProtector()
 
@@ -131,7 +102,7 @@ def get_metadata():
         "token_endpoint_auth_methods_supported": ["client_secret_basic"],
         "token_endpoint_auth_signing_alg_values_supported": ["RS256"],
         "scopes_supported": ["openid", "email"],
-        "response_types_supported": ["code", "code id_token", "id_token"],
+        "response_types_supported": ["code"],
         "userinfo_signing_alg_values_supported": ["RS256"]
     }
 
@@ -160,8 +131,6 @@ def config_oauth(app):
     authorization.register_grant(AuthorizationCodeGrant, [
         OpenIDCode(require_nonce=app.config['REQUIRE_NONCE']),
     ])
-    authorization.register_grant(ImplicitGrant)
-    authorization.register_grant(HybridGrant)
 
     # protect resource
     bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)
