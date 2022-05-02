@@ -1,4 +1,5 @@
 import sys
+import time
 from authlib.integrations.flask_oauth2 import (
     AuthorizationServer, ResourceProtector)
 from authlib.integrations.sqla_oauth2 import (
@@ -8,6 +9,7 @@ from authlib.integrations.sqla_oauth2 import (
 )
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
+    RefreshTokenGrant as _RefreshTokenGrant,
 )
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
 from authlib.oidc.core import UserInfo
@@ -87,6 +89,26 @@ class OpenIDCode(_OpenIDCode):
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
 
+class RefreshTokenGrant(_RefreshTokenGrant):
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_post']
+
+    def authenticate_refresh_token(self, refresh_token):
+        item = OAuth2Token.query.filter_by(refresh_token=refresh_token).first()
+        # define is_refresh_token_valid by yourself
+        # usually, you should check if refresh token is expired and revoked
+        if item and not item.is_expired():
+            return item
+
+    def authenticate_user(self, credential):
+        return User.query.get(credential.user_id)
+
+    def revoke_old_credential(self, credential):
+        now = int(time.time())
+        credential.access_token_revoked_at = now
+        credential.refresh_token_revoked_at = now
+        db.session.add(credential)
+        db.session.commit()
+
 
 authorization = AuthorizationServer()
 require_oauth = ResourceProtector()
@@ -137,6 +159,7 @@ def config_oauth(app):
     authorization.register_grant(AuthorizationCodeGrant, [
         OpenIDCode(require_nonce=app.config['REQUIRE_NONCE']),
     ])
+    authorization.register_grant(RefreshTokenGrant)
 
     # protect resource
     bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)
