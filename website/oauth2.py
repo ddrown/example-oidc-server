@@ -46,6 +46,11 @@ def generate_user_info(user, scope):
             extra[claim] = getattr(user, claim)
     return UserInfo(sub=str(user.id), **extra)
 
+def access_tokens(client, grant_type, user, scope):
+    #if (user.username == "test"):
+    #    return "test-key"
+    code = gen_salt(48)
+    return code
 
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
     def create_authorization_code(self, client, grant_user, request):
